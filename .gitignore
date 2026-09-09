@@ -1,0 +1,4 @@
+/src/CoffeeManagement.Api/bin/
+/src/CoffeeManagement.Api/obj/
+.DS_Store
+/doc/

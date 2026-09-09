@@ -1,0 +1,64 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrongPassword123!
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    networks:
+      - coffee-network
+    container_name: coffee-sqlserver
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "YourStrongPassword123!", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./CoffeeManagement.Api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - coffee-network
+    container_name: coffee-api
+
+  frontend:
+    build:
+      context: ./Frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - coffee-network
+    container_name: coffee-frontend
+    volumes:
+      - ./Frontend/src:/app/src
+      - ./Frontend/index.html:/app/index.html
+      - ./Frontend/vite.config.js:/app/vite.config.js
+    develop:
+      watch:
+        - path: ./Frontend/src
+          target: /app/src
+          action: sync
+        - path: ./Frontend/package.json
+          target: /app/package.json
+          action: restart
+
+networks:
+  coffee-network:
+    driver: bridge
+
+volumes:
+  sqlserver-data:
