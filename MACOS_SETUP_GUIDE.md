@@ -775,3 +775,7 @@ docker compose up
 **Document Version:** 1.0  
 **Last Updated:** September 2026  
 **Compatibility:** macOS 11+ with Docker Desktop
+
+
+#  Docker stack is running
+cd /Users/macos/Documents/CoffeeManagement/src && docker compose down --remove-orphans && docker compose up --build -d && docker compose ps;
